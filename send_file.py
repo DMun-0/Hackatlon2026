@@ -46,5 +46,5 @@ def send_file(filename):
 
 
 if __name__ == "__main__":
-    send_file(sys.argv[1]) # Example only
-    #send_file(r"C:\Users\Akos\Documents\myfile.txt") --- We are gonna use this
+    #send_file(sys.argv[1]) # Example only
+    send_file(r"C:\Hackatlon2026\requirements.txt")
