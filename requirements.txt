@@ -7,9 +7,6 @@ tabulate
 python-dotenv
 Pillow
 scikit-learn
-os
-sys
-dotenv
 cachetools
 paho-mqtt
 langchain
@@ -23,4 +20,3 @@ ollama
 transformers
 huggingface-hub
 torch
-python 3.11

@@ -1,5 +1,11 @@
-from user_menu import user_menu
+#from user_menu import user_menu
 
-if __name__ == "__main__":
-    menu = user_menu()
-    menu.display_menu()
+
+from langchain_text_splitters import CharacterTextSplitter
+from langchain_community.embeddings import HuggingFaceEmbeddings
+
+print("Imports OK")
+
+#if __name__ == "__main__":
+    #menu = user_menu()
+    #menu.display_menu()
