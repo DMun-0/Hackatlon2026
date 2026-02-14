@@ -11,8 +11,16 @@ os
 sys
 dotenv
 cachetools
-json
 paho-mqtt
-ssl
-base64
-langchain langchain-community chromadb sentence-transformers pypdf
+langchain
+langchain-community
+chromadb
+sentence-transformers
+pypdf
+Flask
+Flask-Cors
+ollama
+transformers
+huggingface-hub
+torch
+python 3.11
