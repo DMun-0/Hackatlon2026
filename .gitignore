@@ -28,3 +28,7 @@ Thumbs.db
 
 
 certs/
+
+# ===== Node Modules for site =====
+node_modules/
+
