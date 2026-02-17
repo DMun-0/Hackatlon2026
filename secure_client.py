@@ -3,14 +3,11 @@ import ssl
 import base64
 import os
 import sys
-import uuid
 import socket
 
 # ================= CONFIG =================
 
-BROKER = os.environ.get("BROKER_HOST") or (sys.argv[1] if len(sys.argv) > 1 else "HackatlonServer")
-BROKER_HOST = os.environ.get("BROKER_HOST", "HackatlonServer")
-
+BROKER = "HackatlonServer"
 PORT = 8883
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -21,19 +18,39 @@ CLIENT_KEY = os.path.join(BASE_DIR, "certs", "client", "ec_client_private.pem")
 
 REQUEST_TOPIC = "secure/files/request"
 
-# Unique client ID (important for multi-computer setup)
-CLIENT_ID = f"client_{socket.gethostname()}_{uuid.uuid4().hex[:6]}"
+# 🔒 STABIL CLIENT ID (ikke random!)
+CLIENT_ID = f"client_{socket.gethostname()}"
 RESPONSE_TOPIC = f"secure/files/response/{CLIENT_ID}"
 
+FILE_TO_SEND = None
+
 # ==========================================
+
+def send_file(client):
+    with open(FILE_TO_SEND, "rb") as f:
+        file_data = f.read()
+
+    encoded = base64.b64encode(file_data).decode()
+
+    payload = f"{os.path.basename(FILE_TO_SEND)}::{CLIENT_ID}::{encoded}"
+
+    client.publish(REQUEST_TOPIC, payload)
+    print("[CLIENT] File sent to AI")
+
 
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
         print("[CLIENT] Connected successfully")
+        print("[CLIENT] CLIENT_ID:", CLIENT_ID)
+
         client.subscribe(RESPONSE_TOPIC)
         print(f"[CLIENT] Subscribed to {RESPONSE_TOPIC}")
+
+        # Send file AFTER subscribe
+        send_file(client)
     else:
         print("[CLIENT] Connection failed:", rc)
+
 
 def on_message(client, userdata, msg):
     print("[CLIENT] AI response received!")
@@ -48,21 +65,12 @@ def on_message(client, userdata, msg):
             f.write(file_data)
 
         print(f"[CLIENT] Saved as {save_name}")
+
     except Exception as e:
         print("[CLIENT ERROR]", e)
 
     client.disconnect()
 
-def send_file(client, filepath):
-    with open(filepath, "rb") as f:
-        file_data = f.read()
-
-    encoded = base64.b64encode(file_data).decode()
-
-    payload = f"{os.path.basename(filepath)}::{CLIENT_ID}::{encoded}"
-
-    client.publish(REQUEST_TOPIC, payload)
-    print("[CLIENT] File sent to AI")
 
 # ================= MAIN =================
 
@@ -72,7 +80,7 @@ if __name__ == "__main__":
         print("Usage: python secure_client.py <file_to_send>")
         sys.exit(1)
 
-    filepath = sys.argv[1]
+    FILE_TO_SEND = sys.argv[1]
 
     client = mqtt.Client(client_id=CLIENT_ID)
 
@@ -89,16 +97,6 @@ if __name__ == "__main__":
     print("[CLIENT] Connecting...")
     client.connect(BROKER, PORT)
 
-    client.loop_start()
-
-    # Give time to connect & subscribe
-    import time
-    time.sleep(1)
-
-    send_file(client, filepath)
-
-    # Wait until response received
-    while client.is_connected():
-        time.sleep(0.5)
+    client.loop_forever()
 
     print("[CLIENT] Done.")
